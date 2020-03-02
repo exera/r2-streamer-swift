@@ -41,7 +41,7 @@ final class CBCDRMInputStream: DRMInputStream {
             let data = Data(bytes: buffer, count: numberOfBytesRead)
             stream.close()
             
-            guard let decryptedData = try license.decipher(data) else {
+            guard let decryptedData = try license.decipher(data, link) else {
                 fail(with: Error.emptyDecryptedData)
                 return 0
             }
@@ -107,7 +107,7 @@ final class CBCDRMInputStream: DRMInputStream {
         }
         
         do {
-            guard let decryptedData = try license.decipher(data) else {
+            guard let decryptedData = try license.decipher(data, link) else {
                 fail(with: Error.emptyDecryptedData)
                 return -1
             }

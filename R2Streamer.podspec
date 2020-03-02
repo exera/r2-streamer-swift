@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
 
   s.name         = "R2Streamer"
-  s.version      = "1.2.6"
+  s.version      = "1.2.7"
   s.license      = "BSD 3-Clause License"
   s.summary      = "R2 Streamer"
   s.homepage     = "https://github.com/d-i-t-a/r2-streamer-swift"
   s.author       = { "Aferdita Muriqi" => "aferdita.muriqi@gmail.com" }
-  s.source       = { :git => "https://github.com/d-i-t-a/r2-streamer-swift.git", :tag => "1.2.6" }
+  s.source       = { :git => "https://github.com/d-i-t-a/r2-streamer-swift.git", :tag => "1.2.7" }
   s.exclude_files = ["**/Info*.plist"]
   s.requires_arc = true
   s.resources    = ['r2-streamer-swift/Resources/**']

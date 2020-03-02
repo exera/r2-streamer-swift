@@ -144,7 +144,7 @@ internal class Fetcher {
             throw FetcherError.missingContainerMimetype
         }
         switch mimeType {
-        case EPUBConstant.mimetype, EPUBConstant.mimetypeOEBPS:
+        case EPUBConstant.mimetype, EPUBConstant.mimetypeOEBPS, EPUBConstant.mimetypeNAV:
             return ContentFiltersEpub()
         case CBZConstant.mimetype:
             return ContentFiltersCbz()

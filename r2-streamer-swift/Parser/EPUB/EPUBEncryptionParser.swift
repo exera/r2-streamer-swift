@@ -40,9 +40,14 @@ final class EPUBEncryptionParser: Loggable {
         document?.definePrefix("enc", forNamespace: "http://www.w3.org/2001/04/xmlenc#")
         document?.definePrefix("ds", forNamespace: "http://www.w3.org/2000/09/xmldsig#")
         document?.definePrefix("comp", forNamespace: "http://www.idpf.org/2016/encryption#compression")
+        document?.definePrefix("adobe", forNamespace: "http://ns.adobe.com/adept")
         return document
     }()
     
+    func encryptionAsString() -> String {
+      return String(decoding: data, as: UTF8.self)
+    }
+  
     /// Parse the Encryption.xml EPUB file. It contains the informationg about encrypted resources and how to decrypt them.
     ///
     /// - Returns: A map between the resource `href` and the matching `EPUBEncryption`.
@@ -72,6 +77,15 @@ final class EPUBEncryptionParser: Loggable {
                 encryption.scheme = drm?.scheme.rawValue
             }
             // LCP END.
+
+            // Adobe. Tag Adobe protected resources.
+            let keyInfo = encryptedDataElement.firstChild(xpath: "ds:KeyInfo/adobe:resource")
+            if keyInfo != nil,
+                drm?.brand == DRM.Brand.adobe
+            {
+                encryption.scheme = drm?.scheme.rawValue
+            }
+            // Adobe END.
 
             for encryptionProperty in encryptedDataElement.xpath("enc:EncryptionProperties/enc:EncryptionProperty") {
                 parseCompressionElement(from: encryptionProperty, to: &encryption)

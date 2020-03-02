@@ -20,6 +20,7 @@ struct EPUBConstant {
     public static let mimetype = "application/epub+zip"
     /// http://www.idpf.org/oebps/ (Legacy).
     public static let mimetypeOEBPS = "application/oebps-package+xml"
+    public static let mimetypeNAV = "application/x-dtbncx+xml"
     /// Media Overlays URL.
     public static let mediaOverlayURL = "media-overlay?resource="
 }
@@ -70,11 +71,6 @@ final public class EpubParser: PublicationParser {
         var publication = try OPFParser(container: container).parsePublication()
         publication.positionListFactory = makePositionListFactory(container: container)
         
-        // Parse navigation tables.
-        parseNavigationDocument(from: container, to: &publication)
-        if publication.tableOfContents.isEmpty || publication.pageList.isEmpty {
-            parseNCXDocument(from: container, to: &publication)
-        }
         
         // Check if the publication is DRM protected.
         let drm = scanForDRM(in: container)
@@ -89,6 +85,12 @@ final public class EpubParser: PublicationParser {
 
             fillEncryptionProfile(forLinksIn: publication, using: drm)
             try parseMediaOverlay(from: fetcher, to: &publication)
+
+            // Parse navigation tables.
+            parseNavigationDocument(from: fetcher, to: &publication)
+            if publication.tableOfContents.isEmpty || publication.pageList.isEmpty {
+                parseNCXDocument(from: fetcher, to: &publication)
+            }
         }
         container.drm = drm
         return ((publication, container), parseRemainingResource)
@@ -124,6 +126,9 @@ final public class EpubParser: PublicationParser {
         if ((try? container.data(relativePath: EPUBConstant.lcplFilePath)) != nil) {
             return DRM(brand: .lcp)
         }
+        if (FileManager.default.fileExists(atPath: container.rootFile.rootPath.appending("_rights.xml"))) {
+            return DRM(brand: .adobe)
+        }
         return nil
     }
 
@@ -132,10 +137,10 @@ final public class EpubParser: PublicationParser {
     /// - Parameters:
     ///   - container: The Epub container.
     ///   - publication: The Epub publication.
-    private static func parseNavigationDocument(from container: Container, to publication: inout Publication) {
+    private static func parseNavigationDocument(from fetcher: Fetcher, to publication: inout Publication) {
         // Get the link in the readingOrder pointing to the Navigation Document.
         guard let navLink = publication.link(withRel: "contents"),
-            let navDocumentData = try? container.data(relativePath: navLink.href) else
+            let navDocumentData = try? fetcher.data(forLink: navLink) else
         {
             return
         }
@@ -159,10 +164,10 @@ final public class EpubParser: PublicationParser {
     /// - Parameters:
     ///   - container: The Epub container.
     ///   - publication: The Epub publication.
-    private static func parseNCXDocument(from container: Container, to publication: inout Publication) {
+    private static func parseNCXDocument(from fetcher: Fetcher, to publication: inout Publication) {
         // Get the link in the readingOrder pointing to the NCX document.
         guard let ncxLink = publication.resources.first(where: { $0.type == "application/x-dtbncx+xml" }),
-            let ncxDocumentData = try? container.data(relativePath: ncxLink.href) else
+            let ncxDocumentData = try? fetcher.data(forLink: ncxLink) else
         {
             return
         }

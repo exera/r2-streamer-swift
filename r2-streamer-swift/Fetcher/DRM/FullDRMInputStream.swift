@@ -49,7 +49,7 @@ final class FullDRMInputStream: DRMInputStream {
         }
         
         do {
-            guard let decryptedData = try license.decipher(data) else {
+            guard let decryptedData = try license.decipher(data,  link) else {
                 fail(with: Error.emptyDecryptedData)
                 return nil
             }
@@ -61,7 +61,7 @@ final class FullDRMInputStream: DRMInputStream {
         
         // Remove padding from data
         let padding = Int(data[data.count - 1])
-        data = data.subdata(in: Range(uncheckedBounds: (0, data.count - padding)))
+//        data = data.subdata(in: Range(uncheckedBounds: (0, data.count - padding)))
 
         // If the ressource was compressed using deflate, inflate it.
         if isDeflated {
