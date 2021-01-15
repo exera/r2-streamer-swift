@@ -23,6 +23,5 @@ Pod::Spec.new do |s|
   s.dependency 'Fuzi'
   s.dependency 'CryptoSwift'
   s.dependency 'GCDWebServer'
-  s.dependency 'Minizip'
 
 end
